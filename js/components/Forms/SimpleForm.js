@@ -11,6 +11,7 @@ import { Dropdown } from 'react-native-material-dropdown';
 //import { signupApi } from './../../api/outh';
 import Loader from './../Loader';
 import variable from './../../themes/variables';
+import api from './../../config/api';
 
 
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -91,12 +92,13 @@ let navigate;
 class SimpleForm extends Component {
   constructor(props) {
     super(props);
+    //console.log(this.props);
     navigate = props.navigate;
     this.state = {
       isReady: false,
       loading: false,
       error: {},
-      date: ""
+      date: "2016-03-1"
     };
 
 
@@ -134,21 +136,21 @@ class SimpleForm extends Component {
       throw new SubmissionError(submitError);
     }
     else {
-      console.log("dsdas" + this.isLoading)
-      //this.state.isReady = true;
-      //this.setState({ isReady: true });
+    //  console.log("dsdas" + this.isLoading)
+     
       console.log(this.signupData);
       //signupApi(this.signupData,this.state);
-      fetch('http://innorade.in/seller/location/signup', {
+      
+      fetch(api.signUp, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          formData: this.signupData,
-          store_id: '2'
-        })
+        body: JSON.stringify(
+          this.signupData,
+          
+        )
       })
         .then((response) => response.json())
         .then(function (json) {
@@ -178,13 +180,17 @@ class SimpleForm extends Component {
           else {
 
           }
-          //let userInfo = json.responseData;
+         
         })
 
         .catch(function (error) {
           console.log(error.message);
         })
+        
     }
+  }
+  componentWillReceiveProps (nextProps) {
+  //console.log("update");
   }
   async componentWillMount() {
     /* 
@@ -197,10 +203,11 @@ class SimpleForm extends Component {
   }
   renderInput({ input, label, type, placeholder, password, parse, placeholderTextColor, meta: { touched, error, warning } }) {
     var hasError = false;
-    console.log(this.props);
+    //console.log(this.props);
     if (error !== undefined) {
       hasError = true;
     }
+   
     return (
       <Item error={hasError} style={{ marginLeft: 0 }}>
 
@@ -223,19 +230,22 @@ class SimpleForm extends Component {
     if (error !== undefined) {
       hasError = true;
     }
+    console.log(this);
+    //setState({date: "2017-07-18"});
+    //console.log(this.state.date);
     return (
+      
       <Item error={hasError} style={{ marginLeft: 0 }}>
-
+        <Text>{this.state.date}</Text>
         <DatePicker
-          {...input}
-          style={{ width: 220, height: 45 }}
-          date={this.state.date}
+         
+          style={{ width: variable.deviceWidth - 75, height: 45 }}
+          date="2012-01-1"
           mode="date"
           //date={this.state.dob}
           placeholder="Select DOB"
           format="YYYY-MM-DD"
-          minDate="2016-05-01"
-          value={input.value}
+         
           confirmBtnText="Confirm"
           cancelBtnText="Cancel"
 
@@ -267,13 +277,17 @@ class SimpleForm extends Component {
             // ... You can check the source to find the other keys.
           }}
           onDateChange={(date) => {
-
-            this.setState({ date: "2018-02-02" });
-            //date = date
-            /*this.setState({dob: date}); console.log(this.state.dob)*/
-            console.log(this.state)
-          }}
-          onChange={() => { input.onChange }}
+            this.setState({date: date})
+            this.dispatch(updateDate())
+            //console.log(this.state.date)
+          }
+          }
+          onCloseModal={() => { 
+            input.onChange
+           // console.log(input.date);
+            //date= '2016-05-17'
+            //console.log("current date"+ JSON.stringify(input));
+           }}
         />
 
       </Item>
@@ -314,7 +328,7 @@ class SimpleForm extends Component {
           }
           containerStyle={
             {
-              width: 237,
+              width: variable.deviceWidth - 75,
               borderBottomWidth: 0
             }
           }
@@ -356,7 +370,7 @@ class SimpleForm extends Component {
           <Field name="password" component={this.renderInput} placeholder="Password" type="Password" password={true} placeholderTextColor="#fff" />
           <Field name="confirmPassword" component={this.renderInput} placeholder="Confirm Password" type="Password" password={true} placeholderTextColor="#fff" />
 
-          <Field name="date" component={this.renderDatePicker} type="text" />
+          <Field name="date" component={this.renderDatePicker} type="text"/>
           <Field name="country" component={this.renderDropDown} dropDownList={country} placeholder="Select Country" type="text" />
           <Field name="state" component={this.renderDropDown} dropDownList={state} placeholder="Select State" type="text" />
 
@@ -364,7 +378,7 @@ class SimpleForm extends Component {
             <Text style={{ color: variable.backgroundColor }}>Sign Up</Text>
           </Button>
         </Form>
-        <View style={{ flex: 1, marginTop: 15, flexDirection: 'row' }}>
+        <View style={{ flex: 1, marginTop: 15, flexDirection: 'row',justifyContent: 'space-between' }}>
           <View style={{ alignItems: 'flex-start' }}>
             <Text style={{ color: '#fff', fontSize: 14 }}> Already have an account? </Text>
           </View>
@@ -380,18 +394,18 @@ class SimpleForm extends Component {
           <Text style={{ color: '#fff' }}>OR</Text>
         </View>
         <View style={{ marginTop: 15 }}>
-          <Icon.Button name="facebook" backgroundColor="#3b5998" marginLeft={12} iconStyle={{ marginLeft: 10 }} onPress={this.loginWithFacebook}>
+          <Icon.Button name="facebook" backgroundColor="#3b5998" style={{justifyContent:'center'}} marginLeft={12} iconStyle={{ marginLeft: 10 }} onPress={this.loginWithFacebook}>
             Login with Facebook
           </Icon.Button>
 
         </View>
         <View style={{ marginTop: 15 }}>
-          <Icon.Button name="twitter" backgroundColor="#1da1f2" marginLeft={12} iconStyle={{ marginLeft: 10 }} onPress={this.loginWithTwitter}>
+          <Icon.Button name="twitter" backgroundColor="#1da1f2" style={{justifyContent:'center'}} marginLeft={12} iconStyle={{ marginLeft: 10 }} onPress={this.loginWithTwitter}>
             Login with twitter
           </Icon.Button>
         </View>
         <View style={{ marginTop: 15 }}>
-          <Icon.Button name="google-plus" backgroundColor="#d34836" marginLeft={12} iconStyle={{ marginLeft: 10 }} onPress={this.loginWithTwitter}>
+          <Icon.Button name="google-plus" backgroundColor="#d34836" style={{justifyContent:'center'}} marginLeft={12} iconStyle={{ marginLeft: 10 }} onPress={this.loginWithTwitter}>
             Login with google plus
           </Icon.Button>
         </View>
@@ -410,7 +424,7 @@ SimpleForm = connect(
 
     this.signupData = selector(state, 'username', 'email', 'password', 'confirmPassword', 'dob', 'country', 'state');
 
-    console.log(this.signupData);
+    //console.log(this.signupData);
 
     valid = isValid('Signup')(state);
     //console.log(valid);
