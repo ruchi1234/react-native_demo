@@ -4,75 +4,58 @@ import { Container, Item, Input, Header, Body, Content, Title, Button, Text, Lab
 import { Field, reduxForm, formValueSelector, getFormValues, isValid, SubmissionError } from 'redux-form';
 import { connect } from "react-redux";
 import variable from './../../themes/variables';
-
 import { loginApi } from './../../api/outh'
+import Loader from './../Loader';
+
+import { loginUser } from './actions';
+import { LOGIN_USER, IS_LOGIN } from './../../actionTypes';
+
 
 const validate = values => {
     const error = {};
-    error.phone = '';
+    error.email = '';
     error.password = '';
-    let phn = values.phone;
+    let em = values.email;
     let pass = values.password;
 
-    if (values.phone === undefined) {
-        phn = '';
+    if (values.em === undefined) {
+        em = '';
     }
     if (values.password === undefined) {
         pass = '';
     }
 
-    if (phn != '') {
-
-        if (!phonenumber(phn)) {
-            error.phone = 'Invailid phone'
-        }
-    }
     return error;
 };
 
-const phoneFormatter = (number) => {
-    if (!number) return '';
-    const splitter = /.{1,3}/g;
-    number = number.substring(0, 10);
-    return number.substring(0, 7).match(splitter).join('-') + number.substring(7);
-};
-/**
- * Remove dashes added by the formatter. We want to store phones as plain numbers
- */
-const phoneParser = (number) => number ? number.replace(/-/g, '') : '';
 
-const phonenumber = (inputtxt) => {
-    var phoneno = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-    return inputtxt.match(phoneno) ? true : false;
-}
 const launchscreenLogo = require("../../../img/logo-ichallenge.png");
-let navigation;
+let navigate;
 class LoginFormTemplate extends Component {
 
     constructor(props) {
         super(props);
         console.log("props" + props);
-        navigation = props.navigate;
+        navigate = props.navigate;
         this.state = {
-            isReady: false,
-            error: {},
 
         };
         let { dispatch } = this.props;
         console.log(dispatch);
         this.renderInput = this.renderInput.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleSubmit() {
 
         let submitError = {};
 
-        if (this.loginData.phone === undefined) {
+        if (loginData.email === undefined) {
 
-            submitError.phone = '* Required';
+            submitError.email = '* Required';
 
         }
-        if (this.loginData.password === undefined) {
+        if (loginData.password === undefined) {
             submitError.password = '* Required';
 
         }
@@ -81,10 +64,18 @@ class LoginFormTemplate extends Component {
             throw new SubmissionError(submitError);
         }
         else {
-            loginApi(this.loginData, navigation);
+            //loginApi(this.loginData, navigation);
+           
+            this.props.loginUser(loginData, function (userInfo) {
+
+                if (Object.keys(userInfo).length != 0) {
+                    navigate("Lobby");
+                }
+
+            });
         }
 
-}
+    }
 
 
     renderInput({ input, label, type, placeholder, password, parse, placeholderTextColor, meta: { touched, error, warning } }) {
@@ -104,9 +95,10 @@ class LoginFormTemplate extends Component {
                     parse={parse}
                     placeholderTextColor={placeholderTextColor}
                     style={{ color: '#fff' }}
+                    autoCapitalize = "none"
 
                 />
-                {hasError ? <Text style={{paddingLeft:3, paddingRight: 3, backgroundColor:'#fff',color:variable.backgroundColor}}>{error}</Text> : <Text />}
+                {hasError ? <Text style={{ paddingLeft: 3, paddingRight: 3, backgroundColor: '#fff', color: variable.backgroundColor }}>{error}</Text> : <Text />}
             </Item>
         )
     }
@@ -121,46 +113,59 @@ class LoginFormTemplate extends Component {
 
 
             <View>
+            <Loader
+                loading={this.props.loadingIndicator} />
+                <Form>
 
-
-                <Field name="phone" component={this.renderInput} type="text" placeholder="Phone" format={phoneFormatter} parse={phoneParser} password={false} placeholderTextColor="#fff" />
+                <Field name="email" component={this.renderInput} type="text" placeholder="User Name or email" password={false} placeholderTextColor="#fff" />
                 <Field name="password" component={this.renderInput} placeholder="Password" type="Password" password={true} placeholderTextColor="#fff" />
 
                 <Button type="submit" block primary onPress={this.props.handleSubmit(this.handleSubmit.bind(onSubmit))} style={styles.btn}>
                     <Text style={{ color: variable.backgroundColor }}>Sign In</Text>
                 </Button>
-
+                </Form>
                 <View style={{ flex: 1, marginTop: 15, flexDirection: 'row' }}>
                     <View style={{ alignItems: 'flex-start' }}>
                         <Text style={{ color: '#fff', fontSize: 14 }}> Don't have an account? </Text>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
+
                         <Button transparent light style={{ height: 19 }}
-                            onPress={() => this.props.navigate("SignUp")}
+                            onPress={() => this.props.navigate("Signup")}
                         >
                             <Text style={{ color: '#fff' }} > Sign Up </Text>
                         </Button>
                     </View>
                 </View>
             </View>
-
         )
     }
 }
 
 
 const selector = formValueSelector('Login') // <-- same as form name
-LoginFormTemplate = connect(
-    state => {
-        // can select values individually
-        this.loginData = selector(state, 'phone', 'password');
 
 
-        return {
-            loginData,
+// This is the state of global app and not state of your Component
+const mapStateToProps = (state) => {
+    //console.log(state);
+    //signupReducer
+    const { userinfo, loadingIndicator, signinerror } = state.loginReducer;
+    const { isLogin, logged_in_user_id } = state.checkLoginReducer;
+    this.loginData = selector(state, 'email', 'password');
+    console.log(loginData);
 
-        }
+    return {
+        loginData,
+        loadingIndicator,
+        isLogin,
+        logged_in_user_id
     }
+
+};
+
+LoginFormTemplate = connect(mapStateToProps,
+    { loginUser }
 )(LoginFormTemplate)
 
 

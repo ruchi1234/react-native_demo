@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Image } from "react-native";
+import { isLoggedInUser } from './../../action';
+import {connect} from 'react-redux';
 
 import {
 	Content,
@@ -49,6 +51,10 @@ const datas = [
 	{
 		name: "AddChallange",
 		route: "AddChallange"
+	},
+	{
+		name: "ContactList",
+		route: "ContactList"
 	}
 	
 ];
@@ -60,6 +66,10 @@ class SideBar extends Component {
 			shadowOffsetWidth: 1,
 			shadowRadius: 4,
 		};
+		props.isLoggedInUser(function(){
+			props.navigation.navigate();
+		});
+		console.log(props);
 	}
 
 	render() {
@@ -100,4 +110,15 @@ class SideBar extends Component {
 	}
 }
 
-export default SideBar;
+const mapStateToProps = (state) => {
+    const { loadingIndicator,isLogin,logged_in_user_id,initialRoute } = state.checkLoginReducer;
+    
+    return {
+        isLogin,
+        loadingIndicator,
+        logged_in_user_id,
+        initialRoute
+      }
+
+}
+export default  connect(mapStateToProps,{isLoggedInUser})(SideBar);

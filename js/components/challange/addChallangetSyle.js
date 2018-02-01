@@ -16,15 +16,21 @@ module.exports = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
         marginBottom: 10,
-        width:variable.deviceWidth/2 - 10,
+        width: variable.deviceWidth / 2 - 10,
         height: 39,
     },
     textInput:
-        {
-            alignSelf: 'stretch',
-            color: variable.backgroundColor,
-           
-        },
-   
+    {
+        alignSelf: 'stretch',
+        color: variable.backgroundColor,
+
+    },
+    questionContainer:{
+        padding: 10,
+        borderWidth: 0.5,
+        borderColor: '#000',
+        marginBottom: 5
+    }
+
 
 })

@@ -11,11 +11,11 @@ import { Dropdown } from 'react-native-material-dropdown';
 //import { signupApi } from './../../api/outh';
 import Loader from './../Loader';
 import variable from './../../themes/variables';
-import api from './../../config/api';
 
+import { signupUser, updateDate, updateSignupDate } from './actions';
+import { SIGNUP_USER, SIGNUP_USER_SUCCESS, SIGNUP_USER_DATE, IS_LOGIN } from './../../actionTypes';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 
 
 const validate = values => {
@@ -90,104 +90,80 @@ const state = [{
 
 let navigate;
 class SimpleForm extends Component {
+  
+  
   constructor(props) {
     super(props);
     //console.log(this.props);
     navigate = props.navigate;
     this.state = {
       isReady: false,
-      loading: false,
       error: {},
-      date: "2016-03-1"
+     
     };
+    
 
 
-    this.renderDatePicker = this.renderDatePicker.bind(this)
-    this.renderInput = this.renderInput.bind(this);
-    this.renderDropDown = this.renderDropDown.bind(this);
+
+   this.renderDatePicker = this.renderDatePicker.bind(this)
+   this.renderInput = this.renderInput.bind(this);
+   this.renderDropDown = this.renderDropDown.bind(this);
+   this.handleSubmit = this.handleSubmit.bind(this);
+   this.updateDate = this.updateDate.bind(this);
   }
+
   handleSubmit() {
-    console.log(this.state);
+    console.log(this.props);
     let submitError = {};
-    if (this.signupData.username === undefined) {
+    if (signupData.username === undefined) {
       submitError.username = '* Required';
     }
-    if (this.signupData.email === undefined) {
+    if (signupData.email === undefined) {
       // error.email = '* Required';
       submitError.email = '* Required';
     }
-    if (this.signupData.password === undefined) {
+    if (signupData.password === undefined) {
       submitError.password = '* Required';
     }
-    if (this.signupData.confirmPassword === undefined) {
+    if (signupData.confirmPassword === undefined) {
       submitError.confirmPassword = '* Required';
     }
-    if (this.signupData.confirmPassword === undefined) {
+    if (signupData.confirmPassword === undefined) {
       submitError.confirmPassword = '* Required';
     }
-    if (this.signupData.country === undefined) {
+    if (signupData.country === undefined) {
       submitError.country = '* Required';
     }
-    if (this.signupData.state === undefined) {
-      submitError.state = '* Required';
+    if (signupData.states === undefined) {
+      submitError.states = '* Required';
     }
     //return this.state.error;
-    if (Object.keys(submitError).length != 0) {
+    if (!Object.keys(submitError).length != 0) {
       throw new SubmissionError(submitError);
     }
     else {
-    //  console.log("dsdas" + this.isLoading)
-     
-      console.log(this.signupData);
-      //signupApi(this.signupData,this.state);
+      //this.props.dispatch({ type: IS_LOGIN, payload: 12323 });
+      console.log(this.props);
       
-      fetch(api.signUp, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(
-          this.signupData,
-          
-        )
-      })
-        .then((response) => response.json())
-        .then(function (json) {
-
-          if (json.status == 200) {
-            if (Object.keys(json.responseData).length != 0) {
-              let user_id = json.responseData.admin_user_id;
-              let user_info = json.responseData;
-              AsyncStorage.setItem("user_id", user_id);
-              AsyncStorage.setItem("user_info", JSON.stringify(user_info));
-              //this.props.navigation.navigate('Dashboard');
-
-              navigate("Dashboard")
-
-            }
-            else {
-
-              // alert(json.message);
-              Toast.show({
-                text: json.message,
-                position: 'top',
-                buttonText: 'Okay',
-                type: 'danger'
-              })
-            }
-          }
-          else {
-
-          }
-         
-        })
-
-        .catch(function (error) {
-          console.log(error.message);
-        })
+      this.props.signupUser(signupData,function(userInfo){
         
+        if(Object.keys(userInfo).length != 0)
+        { 
+          navigate("Lobby");
+        }
+       
+      });
+     
+    
     }
+  }
+  updateDate(date)
+  {
+   
+    this.props.dispatch({
+      type: SIGNUP_USER_DATE,
+      payload: date,
+    });
   }
   componentWillReceiveProps (nextProps) {
   //console.log("update");
@@ -218,6 +194,7 @@ class SimpleForm extends Component {
           parse={parse}
           placeholderTextColor={placeholderTextColor}
           style={{ color: '#fff' }}
+          autoCapitalize = "none"
         />
         {hasError ? <Text style={{ paddingLeft: 3, paddingRight: 3, backgroundColor: '#fff', color: variable.backgroundColor }}>{error}</Text> : <Text />}
       </Item>
@@ -226,21 +203,22 @@ class SimpleForm extends Component {
 
   renderDatePicker({ input, label, type, meta: { touched, error, warning } }) {
     var hasError = false;
-    //console.log('date picker is clae');
+    
+    
+   
     if (error !== undefined) {
       hasError = true;
     }
-    console.log(this);
-    //setState({date: "2017-07-18"});
-    //console.log(this.state.date);
+   
+   
     return (
       
       <Item error={hasError} style={{ marginLeft: 0 }}>
-        <Text>{this.state.date}</Text>
+       
         <DatePicker
          
           style={{ width: variable.deviceWidth - 75, height: 45 }}
-          date="2012-01-1"
+          date={this.props.date}
           mode="date"
           //date={this.state.dob}
           placeholder="Select DOB"
@@ -277,17 +255,19 @@ class SimpleForm extends Component {
             // ... You can check the source to find the other keys.
           }}
           onDateChange={(date) => {
-            this.setState({date: date})
-            this.dispatch(updateDate())
-            //console.log(this.state.date)
+            //input.onChange,
+            this.props.date = "2016-03-10"
+            this.updateDate(date);
+            
+           
           }
           }
           onCloseModal={() => { 
-            input.onChange
-           // console.log(input.date);
-            //date= '2016-05-17'
-            //console.log("current date"+ JSON.stringify(input));
+            //input.onChange
+           console.log(this.props.date)
+           
            }}
+           
         />
 
       </Item>
@@ -320,6 +300,7 @@ class SimpleForm extends Component {
           selectedItemColor={variable.backgroundColor}
           style={{ borderBottomWidth: 0, paddingLeft: 5 }}
           value={input.value}
+          
           inputContainerStyle = {
             {
               borderBottomWidth: 0,
@@ -362,22 +343,27 @@ class SimpleForm extends Component {
     return (
 
       <View>
+        <View>
+           {/* { this.props.signuperror && <Text style={{ padding: 5, textAlign:'center', backgroundColor: '#fff', color: variable.backgroundColor }}>{this.props.signuperror}</Text> } */}
+           
+        </View>
         <Loader
-          loading={this.state.loading} />
-        <Form onsubmit={this.handleSubmit}>
-          <Field name="username" component={this.renderInput} type="text" placeholder="User Name" password={false} placeholderTextColor="#fff" />
-          <Field name="email" component={this.renderInput} type="email" placeholder="Email" password={false} placeholderTextColor="#fff" />
-          <Field name="password" component={this.renderInput} placeholder="Password" type="Password" password={true} placeholderTextColor="#fff" />
-          <Field name="confirmPassword" component={this.renderInput} placeholder="Confirm Password" type="Password" password={true} placeholderTextColor="#fff" />
+          loading={this.props.loadingIndicator} />
+          <Form>
+          
+              <Field name="username" component={this.renderInput} type="text" placeholder="User Name" password={false} placeholderTextColor="#fff" />
+              <Field name="email" component={this.renderInput} type="email" placeholder="Email" password={false} placeholderTextColor="#fff" />
+              <Field name="password" component={this.renderInput} placeholder="Password" type="Password" password={true} placeholderTextColor="#fff" />
+              <Field name="confirmPassword" component={this.renderInput} placeholder="Confirm Password" type="Password" password={true} placeholderTextColor="#fff" />
 
-          <Field name="date" component={this.renderDatePicker} type="text"/>
-          <Field name="country" component={this.renderDropDown} dropDownList={country} placeholder="Select Country" type="text" />
-          <Field name="state" component={this.renderDropDown} dropDownList={state} placeholder="Select State" type="text" />
+              <Field name="date" component={this.renderDatePicker} type="text"/>
+              <Field name="country" component={this.renderDropDown} dropDownList={country} placeholder="Select Country" type="text" />
+              <Field name="states" component={this.renderDropDown} dropDownList={state} placeholder="Select State" type="text" />
 
-          <Button type="submit" block primary onPress={this.props.handleSubmit(this.handleSubmit.bind(onSubmit))} style={styles.btn}>
-            <Text style={{ color: variable.backgroundColor }}>Sign Up</Text>
-          </Button>
-        </Form>
+              <Button type="submit" block primary onPress={this.props.handleSubmit(this.handleSubmit.bind(onSubmit))} style={styles.btn}>
+                <Text style={{ color: variable.backgroundColor }}>Sign Up</Text>
+              </Button>
+          </Form>
         <View style={{ flex: 1, marginTop: 15, flexDirection: 'row',justifyContent: 'space-between' }}>
           <View style={{ alignItems: 'flex-start' }}>
             <Text style={{ color: '#fff', fontSize: 14 }}> Already have an account? </Text>
@@ -418,30 +404,37 @@ class SimpleForm extends Component {
 
 
 const selector = formValueSelector('Signup') // <-- same as form name
-SimpleForm = connect(
-  state => {
-    // can select values individually
 
-    this.signupData = selector(state, 'username', 'email', 'password', 'confirmPassword', 'dob', 'country', 'state');
-
-    //console.log(this.signupData);
-
-    valid = isValid('Signup')(state);
-    //console.log(valid);
+// This is the state of global app and not state of your Component
+const mapStateToProps = (state) => {
+  //console.log(state);
+  //signupReducer
+  const { loadingIndicator,date } = state.signupReducer;
+  const { isLogin,logged_in_user_id } = state.checkLoginReducer;
+  this.signupData = selector(state, 'username', 'email','password','confirmPassword','country','states','date');
+  
 
     return {
       signupData,
-
-
+      loadingIndicator,
+      date,
+      isLogin,
+      logged_in_user_id
     }
-  }
+ 
+};
+
+
+SimpleForm = connect(mapStateToProps,
+  {signupUser,updateSignupDate}
 )(SimpleForm)
 
 
 export default reduxForm({
   form: 'Signup',
   validate,
-
+ 
+  
 
 })(SimpleForm)
 

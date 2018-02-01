@@ -11,7 +11,7 @@ import Lobby from "./components/lobby/";
 import Profile from "./components/profile/";
 import Challange from "./components/challange/";
 import AddChallange from './components/challange/addChallange';
-
+import ContactList from './components/contact/';
 const DrawerExample = DrawerNavigator(
   {
     Home: { screen: Home },
@@ -20,10 +20,11 @@ const DrawerExample = DrawerNavigator(
     Lobby: { screen: Lobby },
     Profile: { screen: Profile },
     Challange: { screen: Challange },
-    AddChallange: { screen: AddChallange }
+    AddChallange: { screen: AddChallange },
+    ContactList: { screen: ContactList }
   },
   {
-    initialRouteName: "Signup",
+    initialRouteName: "AddChallange",
     contentOptions: {
       activeTintColor: "#e91e63"
     },
