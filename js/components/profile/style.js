@@ -45,7 +45,8 @@ module.exports = StyleSheet.create({
     },
     cardItemRow: {
         flex: 1,
-        flexDirection: "row"
+        flexDirection: "row",
+       
     },
     cardBody: {
         alignItems: 'flex-start',
@@ -63,7 +64,13 @@ module.exports = StyleSheet.create({
     },
     cardButton: {
         backgroundColor: variable.backgroundColor,
-        height:29
+        height:29,
+        marginBottom:10,
+    },
+    cardButtonDisable: {
+        backgroundColor: variable.backgroundDisableColor,
+        height:29,
+        marginBottom:10,
     },
     cardEnteryText: {
         fontSize:16,
@@ -83,7 +90,11 @@ module.exports = StyleSheet.create({
         borderRadius: 10,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        paddingTop: 20
+      },
+      listHeading: {
+        fontSize: 20,
       }
 
 

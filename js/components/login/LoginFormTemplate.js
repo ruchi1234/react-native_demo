@@ -11,6 +11,7 @@ import { loginUser } from './actions';
 import { LOGIN_USER, IS_LOGIN } from './../../actionTypes';
 
 
+
 const validate = values => {
     const error = {};
     error.email = '';
@@ -35,13 +36,13 @@ class LoginFormTemplate extends Component {
 
     constructor(props) {
         super(props);
-        console.log("props" + props);
+       
         navigate = props.navigate;
         this.state = {
 
         };
         let { dispatch } = this.props;
-        console.log(dispatch);
+       
         this.renderInput = this.renderInput.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -49,7 +50,7 @@ class LoginFormTemplate extends Component {
     handleSubmit() {
 
         let submitError = {};
-
+        
         if (loginData.email === undefined) {
 
             submitError.email = '* Required';
@@ -153,7 +154,7 @@ const mapStateToProps = (state) => {
     const { userinfo, loadingIndicator, signinerror } = state.loginReducer;
     const { isLogin, logged_in_user_id } = state.checkLoginReducer;
     this.loginData = selector(state, 'email', 'password');
-    console.log(loginData);
+    
 
     return {
         loginData,

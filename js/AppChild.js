@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import { Platform, AsyncStorage } from "react-native";
-
+import { Platform, AsyncStorage, NetInfo } from "react-native";
+import { View } from 'react-native';
 import { StackNavigator } from "react-navigation";
 import Drawer from "./Drawer";
 import {connect} from 'react-redux';
+import { connectionState } from './action';
 
-
-import { IS_LOGIN, IS_NOT_LOGIN } from './actionTypes';
 
 
 
@@ -25,32 +24,40 @@ class AppChild extends Component {
 
     constructor(props) {
         super(props);
-        //props.isLoggedInUser();
+      
     }
-    componentWillMount = () => {
-     
+    
+    componentDidMount() {
+        NetInfo.isConnected.addEventListener('change', this._handleConnectionChange);
+    }
+    
+    
+    /*
+    componentWillUnmount() {
+        NetInfo.isConnected.removeEventListener('change', this._handleConnectionChange);
+    }
+    */
+    _handleConnectionChange = (isConnected) => {
        
-    }
+        this.props.connectionState(isConnected);   
+    };
     
     //export default () =>
     render() {
         return (
             
-                    <AppNavigator />
+            <AppNavigator />
         )
     }
 
 };
 const mapStateToProps = (state) => {
-    const { loadingIndicator,isLogin,logged_in_user_id,initialRoute } = state.checkLoginReducer;
-    
+  
+    const { internetStatus } = state.globalReducer;
     return {
-        isLogin,
-        loadingIndicator,
-        logged_in_user_id,
-        initialRoute
+        internetStatus
       }
 
 }
-export default  connect(mapStateToProps)(AppChild);
+export default  connect(mapStateToProps,{connectionState})(AppChild);
 

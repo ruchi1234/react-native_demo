@@ -1,7 +1,8 @@
 import { SIGNUP_USER, SIGNUP_USER_SUCCESS, SIGNUP_USER_DATE, SIGNUP_USER_FAIL } from '../../actionTypes';
 import api from './../../config/api';
-import { Toast } from 'native-base';
+//import { Toast } from 'native-base';
 import { AsyncStorage } from 'react-native';
+import { ToastActionsCreators } from 'react-native-redux-toast';
 export function updateDate(element) {
     console.log('updateDate' + element);
     return {
@@ -27,7 +28,7 @@ export const signupUser = (signupData,callback) => {
 
     return (dispatch) => {
         //console.log(signupData);
-        dispatch({ type: SIGNUP_USER });
+       // dispatch({ type: SIGNUP_USER });
         
        
 
@@ -45,7 +46,7 @@ export const signupUser = (signupData,callback) => {
             .then((response) => response.json())
             .then(function (json) {
 
-                if (json.status == 200) {
+                if (json.status == 200 && json.success==true) {
                     if (Object.keys(json.userInfo).length != 0) {
                         let user_id = json.userInfo.user_id;
                         let user_name = json.userInfo.user_name;
@@ -58,28 +59,17 @@ export const signupUser = (signupData,callback) => {
                         callback(json.userInfo);
                     }
                     else {
-
-                        // alert(json.message);
-                        Toast.show({
-                            text: json.message,
-                            position: 'top',
-                            buttonText: 'Okay',
-                            type: 'danger'
-                        })
                         signupUserFailed(dispatch, json.message);
-                        callback({});
+                        dispatch(ToastActionsCreators.displayError(json.message));
+                       
+                        //callback({});
                     }
                    
                 }
                 else {
-                    Toast.show({
-                        text: json.message,
-                        position: 'top',
-                        buttonText: 'Okay',
-                        type: 'danger'
-                    })
-                    signupUserFailed(dispatch, json.message);
-                    callback({});
+                  signupUserFailed(dispatch, json.message);
+                  dispatch(ToastActionsCreators.displayError(json.message));
+                    //callback({});
                 }
 
             })

@@ -35,6 +35,10 @@ module.exports = StyleSheet.create({
         backgroundColor: variable.backgroundColor,
         height:29
     },
+    cardButtonDisable: {
+        backgroundColor: variable.backgroundDisableColor,
+        height:29
+    },
     cardEnteryText: {
         fontSize:16,
         fontWeight:'normal'

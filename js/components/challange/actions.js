@@ -1,5 +1,6 @@
-import { UPDATE_QUESTION, SAVE_CHALLANGE, SAVE_CHALLANGE_SUCCESSFULLY, SAVE_CHALLANGE_ERROR } from '../../actionTypes';
+import { UPDATE_QUESTION, SAVE_CHALLANGE, SAVE_CHALLANGE_SUCCESSFULLY, SAVE_CHALLANGE_ERROR , GET_CHALLENGE_INFO, CHALLENGE_INFO_COMPLETE, CHALLENGE_INFO_ERROR} from '../../actionTypes';
 import api from './../../config/api';
+import { ToastActionsCreators } from 'react-native-redux-toast';
 
 export const updateQuestionList = (questionList) => {
 
@@ -82,52 +83,19 @@ export const submitChallange = (challangeData) => {
             .then((response) => response.json())
             .then(function (json) {
 
-                if (json.status == 200) {
-                    console.log("sucess ful");
-                    /*
-                    if (Object.keys(json.userInfo).length != 0) {
-                        
-                        let user_id = json.userInfo.user_id;
-                        let user_name = json.userInfo.user_name;
-                        AsyncStorage.setItem("user_id", user_id);
-                        AsyncStorage.setItem("userInfo", JSON.stringify(json.userInfo));
-                        //this.props.navigation.navigate('Dashboard');
+               
+                /*
 
-                        //navigate("Dashboard")
-                        signupUserSuccess(dispatch, json.userInfo);
-                        callback(json.userInfo);
-                       
-                    }
-                    else {
-                        
-                        // alert(json.message);
-                        Toast.show({
-                            text: json.message,
-                            position: 'top',
-                            buttonText: 'Okay',
-                            type: 'danger'
-                        })
-                        signupUserFailed(dispatch, json.message);
-                        callback({});
-                      
-                    }
-                    */
+                if (json.status == 200 && json.success == true) {
+                    dispatch({ type: CHALLENGE_INFO_COMPLETE, payload:{challenge_info: json.challenge_info,player_list: json.player_list} });
+                    
                 }
                 else {
-                    /*
-                    Toast.show({
-                        text: json.message,
-                        position: 'top',
-                        buttonText: 'Okay',
-                        type: 'danger'
-                    })
-                    signupUserFailed(dispatch, json.message);
-                    callback({});
-                    */
+                    dispatch({ type: CHALLENGE_INFO_COMPLETE, payload:{challenge_info: {},player_list: {}} });
                 }
-                console.log(response);
-                dispatch({ type: SAVE_CHALLANGE_SUCCESSFULLY});
-
+                */
+               
+               
             })
 
             .catch(function (error) {
@@ -138,3 +106,38 @@ export const submitChallange = (challangeData) => {
     }
 };
 
+
+export const challengeInfo = (login_user_id,challenge_id)=> {
+    return (dispatch) => {
+
+        dispatch({ type: GET_CHALLENGE_INFO });
+        fetch(api.challangeInfo + '?user_id=' + login_user_id+'&challenge_id=' + challenge_id, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        })
+
+            .then((response) => response.json())
+            .then(function (json) {
+
+                if (json.status == 200 && json.success == true) {
+                    dispatch({ type: CHALLENGE_INFO_COMPLETE, payload:{challenge_info: json.challenge_info,player_list: json.player_list} });
+                    
+                }
+                else {
+                    dispatch({ type: CHALLENGE_INFO_COMPLETE, payload:{challenge_info: {},player_list: {}} });
+                    dispatch(ToastActionsCreators.displayError(json.message));
+                }
+
+            })
+
+            .catch(function (error) {
+
+                dispatch({ type: CHALLENGE_INFO_ERROR });
+                dispatch(ToastActionsCreators.displayError(error));
+
+            })
+    }
+}

@@ -4,8 +4,9 @@ const INITIAL_STATE = {
 
     loadingIndicator: false,
     isLogin: false,
-    logged_in_user_id: null,
-    initialRoute: 'Signup'
+    logged_in_user_id: '5a7946f2550eda05df5e9899',
+    initialRoute: 'Signup',
+    
 };
 
 const checkLoginReducer = (state = INITIAL_STATE, action) => {

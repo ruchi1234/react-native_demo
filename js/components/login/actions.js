@@ -1,6 +1,6 @@
 import { LOGIN_USER, LOGIN_USER_SUCCESS, LOGIN_USER_FAIL } from '../../actionTypes';
 import api from './../../config/api';
-import { Toast } from 'native-base';
+import { ToastActionsCreators } from 'react-native-redux-toast';
 import { AsyncStorage } from 'react-native';
 
 const loginUserSuccess = (dispatch, user) => {
@@ -39,7 +39,7 @@ export const loginUser = (loginData,callback) => {
             .then((response) => response.json())
             .then(function (json) {
 
-                if (json.status == 200) {
+                if (json.status == 200 && json.success==true) {
                     if (Object.keys(json.userInfo).length != 0) {
                         let user_id = json.userInfo.user_id;
                         let user_name = json.userInfo.user_name;
@@ -52,27 +52,18 @@ export const loginUser = (loginData,callback) => {
                         callback(json.userInfo);
                     }
                     else {
-
-                        // alert(json.message);
-                        Toast.show({
-                            text: json.message,
-                            position: 'top',
-                            buttonText: 'Okay',
-                            type: 'danger'
-                        })
                         loginUserFailed(dispatch, json.message);
+                        // alert(json.message);
+                        dispatch(ToastActionsCreators.displayError(json.message));
+                        
                         callback({});
                     }
                    
                 }
                 else {
-                    Toast.show({
-                        text: json.message,
-                        position: 'top',
-                        buttonText: 'Okay',
-                        type: 'danger'
-                    })
-                    loginUserFailed(dispatch, json.message);
+                     loginUserFailed(dispatch, json.message);
+                     dispatch(ToastActionsCreators.displayError(json.message));
+                    
                     callback({});
                 }
 

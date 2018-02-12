@@ -44,9 +44,8 @@ const datas = [
 		
 	},
 	{
-		name: "Challange",
-		route: "Challange",
-		
+		name: "ProfileEdit",
+		route: "ProfileEdit"
 	},
 	{
 		name: "AddChallange",
@@ -55,6 +54,10 @@ const datas = [
 	{
 		name: "ContactList",
 		route: "ContactList"
+	},
+	{
+		name: "Logout",
+		route: "Logout"
 	}
 	
 ];
@@ -66,10 +69,8 @@ class SideBar extends Component {
 			shadowOffsetWidth: 1,
 			shadowRadius: 4,
 		};
-		props.isLoggedInUser(function(){
-			props.navigation.navigate();
-		});
-		console.log(props);
+	
+	
 	}
 
 	render() {
@@ -102,7 +103,9 @@ class SideBar extends Component {
 											<Text style={styles.badgeText}>{`${data.types} Types`}</Text>
 										</Badge>
 									</Right>}
-							</ListItem>}
+							</ListItem>
+							}
+						
 					/>
 				</Content>
 			</Container>

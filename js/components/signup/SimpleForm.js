@@ -114,6 +114,7 @@ class SimpleForm extends Component {
 
   handleSubmit() {
     console.log(this.props);
+    
     let submitError = {};
     if (signupData.username === undefined) {
       submitError.username = '* Required';
@@ -138,7 +139,7 @@ class SimpleForm extends Component {
       submitError.states = '* Required';
     }
     //return this.state.error;
-    if (!Object.keys(submitError).length != 0) {
+    if (Object.keys(submitError).length != 0) {
       throw new SubmissionError(submitError);
     }
     else {

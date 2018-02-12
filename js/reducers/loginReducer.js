@@ -6,7 +6,8 @@ const INITIAL_STATE = {
     password: '',
     userInfo: null,
     loadingIndicator: false,
-    signinerror:''
+    signinerror:'',
+    logged_in_user : '5a7946f2550eda05df5e9899'
 };
 
 
