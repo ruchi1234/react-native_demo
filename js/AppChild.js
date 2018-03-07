@@ -28,7 +28,7 @@ class AppChild extends Component {
     }
     
     componentDidMount() {
-        NetInfo.isConnected.addEventListener('change', this._handleConnectionChange);
+       // NetInfo.isConnected.addEventListener('change', this._handleConnectionChange);
     }
     
     

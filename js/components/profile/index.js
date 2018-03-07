@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Container, Header, Left, Right, Button, Title, Body, List, ListItem, Thumbnail, Segment, Content, Card, CardItem, Input, Item } from 'native-base';
 
-import { StyleSheet, ScrollView, View, Text, Modal, TouchableHighlight, ActivityIndicator, NetInfo, TouchableOpacity } from 'react-native';
+import { NativeModules, StyleSheet, ScrollView, View, Text, Modal, TouchableHighlight, ActivityIndicator, NetInfo, TouchableOpacity } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
 import IchallangeHeader from "./../../components/header/";
 import FooterTabs from "./../../components/Footer/";
@@ -20,6 +20,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const imageURL = require("../../../img/profile.png");
 
+
+
+
 class Profile extends Component {
 
     constructor(props) {
@@ -28,12 +31,14 @@ class Profile extends Component {
 
             seg: 1,
             error: "",
-            avatarSource:imageURL,
+            avatarSource: imageURL,
 
         };
         if (!this.props.internetStatus) {
             this.props.fetchProfile(this.props.logged_in_user_id, function (response) {
                 //console.log("response"+JSON.stringify(props));
+                //this.state.avatarSource;
+                //this.setState({avatarSource: response})
             }
             );
         }
@@ -67,7 +72,7 @@ class Profile extends Component {
          * The second arg is the callback which sends object: response (more info below in README)
          */
         ImagePicker.showImagePicker(options, (response) => {
-            console.log('Response = ', response);
+            //console.log('Response = ', response.data);
             if (response.didCancel) {
                 console.log('User cancelled image picker');
             }
@@ -81,16 +86,19 @@ class Profile extends Component {
                 //let source = { uri: response.uri };
                 let source;
                 // You can also display the image using data:
-                if (type === 'data') { 
+                if (response.type === 'data') { 
                     source = { uri: 'data:image/jpeg;base64,' + response.data, isStatic: true };
                 }
                 else{
-
+                    source = { uri: 'data:image/jpeg;base64,' + response.data, isStatic: true };
                 }
+                this.props.profile.image = source;
+                /*
                 this.setState({
                     avatarSource: source
                 });
-                this.props.updateProfileImage(source)
+                */
+                this.props.updateProfileImage(source,this.props.logged_in_user_id)
             }
         });
     }
@@ -233,20 +241,21 @@ class Profile extends Component {
                         <List >
                             <ListItem avatar style={styles.listContainer}>
                                 <Left>
-                                    <Thumbnail source={this.state.avatarSource} style={styles.thumbnailContainer} />
+                                  
+                                    <Thumbnail source={{uri: this.props.profile.image}} style={styles.thumbnailContainer} />
                                     <TouchableOpacity onPress={this.uploadImage.bind(this)}>
                                         <Icon name="edit" size={15} color={variable.backgroundColor} style={{position:'relative',top:50,left:-15}}/>
                                     </TouchableOpacity>
                                 </Left>
                                 <Body style={{ borderBottomWidth: 0,marginLeft: 8 }}>
-                                    <View style={{flex:1,flexDirection:'row',justifyContent:'space-between'}}>
+                                    <View style={{flex:1,flexDirection:'row',justifyContent:'space-between',width:190}}>
                                         <View style={{ alignItems: 'flex-start'}}>
                                             <Text>{this.props.profile.username}</Text>
                                             <Text>{this.props.profile.email}</Text>
                                         </View>
                                         <View style={{ alignItems: 'flex-end'}}>
                                              <TouchableOpacity onPress={()=>{this.props.navigation.navigate('ProfileEdit')}}>
-                                                <Icon name="edit" size={30} color={variable.backgroundColor} />
+                                                <Icon name="edit" size={25} color={variable.backgroundColor} />
                                              </TouchableOpacity>
                                         </View>
                                     </View>

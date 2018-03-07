@@ -68,7 +68,7 @@ export const validateIsLogin = (callback) =>{
                     
                 };
                 dispatch({ type: IS_VALIDATING_LOGIN, payload: validateLoginStatus});
-                callback('Profile');
+                callback('AddChallange');
             }
             else{
                 dispatch({ type: IS_VALIDATING_LOGIN, payload: validateLoginStatus});

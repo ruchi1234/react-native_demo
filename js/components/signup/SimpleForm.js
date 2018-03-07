@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 //import Expo from 'expo';
-import { View, StyleSheet, ActivityIndicator, Modal } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Modal, TouchableOpacity } from 'react-native';
 import { Container, Item, Input, Header, Body, Content, Title, Button, Text, Label, Form, Toast } from 'native-base';
 import { Field, reduxForm, formValueSelector, getFormValues, isValid, SubmissionError } from 'redux-form';
 import { connect } from "react-redux";
 import DatePicker from 'react-native-datepicker'
 import { Dropdown } from 'react-native-material-dropdown';
+import DateTimePicker from 'react-native-modal-datetime-picker';
 //import moment from 'moment';
 
 //import { signupApi } from './../../api/outh';
@@ -99,6 +100,9 @@ class SimpleForm extends Component {
     this.state = {
       isReady: false,
       error: {},
+      date: '2016-05-1',
+      dob:  '2016-05-1',
+      isDateTimePickerVisible: false,
      
     };
     
@@ -107,6 +111,7 @@ class SimpleForm extends Component {
 
    this.renderDatePicker = this.renderDatePicker.bind(this)
    this.renderInput = this.renderInput.bind(this);
+   this.renderDob = this.renderDob.bind(this);
    this.renderDropDown = this.renderDropDown.bind(this);
    this.handleSubmit = this.handleSubmit.bind(this);
    this.updateDate = this.updateDate.bind(this);
@@ -160,7 +165,7 @@ class SimpleForm extends Component {
   }
   updateDate(date)
   {
-   
+   console.log("dispatch", date)
     this.props.dispatch({
       type: SIGNUP_USER_DATE,
       payload: date,
@@ -201,33 +206,53 @@ class SimpleForm extends Component {
       </Item>
     )
   }
-
-  renderDatePicker({ input, label, type, meta: { touched, error, warning } }) {
+  renderDob({ input, label, type, placeholder, password, parse, placeholderTextColor, meta: { touched, error, warning } }) {
     var hasError = false;
-    
-    
-   
+    //console.log(this.props);
     if (error !== undefined) {
       hasError = true;
     }
    
-   
     return (
-      
+      <Item error={hasError} style={{ marginLeft: 0 }}>
+
+        <Input {...input}
+          value={this.state.dob}
+          placeholder={placeholder}
+          secureTextEntry={password}
+          parse={parse}
+          placeholderTextColor={placeholderTextColor}
+          style={{ color: '#fff' }}
+          autoCapitalize = "none"
+          onChangeText={input.onChange}
+        />
+        <Icon name="calendar" backgroundColor="#d34836" size={20} color={'#fff'} marginLeft={12} style={{ marginTop: 5, marginRight: 5,marginBottom:14, alignSelf: 'flex-end' }} onPress={this._showDateTimePicker}>
+
+        </Icon>
+        {hasError ? <Text style={{ paddingLeft: 3, paddingRight: 3, backgroundColor: '#fff', color: variable.backgroundColor }}>{error}</Text> : <Text />}
+      </Item>
+    )
+  }
+  
+
+  renderDatePicker({ input, label, type, meta: { touched, error, warning } }) {
+    var hasError = false;
+    if (error !== undefined) {
+      hasError = true;
+    }
+   
+    return (   
       <Item error={hasError} style={{ marginLeft: 0 }}>
        
         <DatePicker
          
           style={{ width: variable.deviceWidth - 75, height: 45 }}
-          date={this.props.date}
+          date={input.value}
           mode="date"
-          //date={this.state.dob}
           placeholder="Select DOB"
           format="YYYY-MM-DD"
-         
           confirmBtnText="Confirm"
           cancelBtnText="Cancel"
-
           customStyles={{
             dateIcon: {
               position: 'absolute',
@@ -256,16 +281,13 @@ class SimpleForm extends Component {
             // ... You can check the source to find the other keys.
           }}
           onDateChange={(date) => {
-            //input.onChange,
-            this.props.date = "2016-03-10"
-            this.updateDate(date);
-            
+            this.setState({date: date})
            
           }
           }
           onCloseModal={() => { 
             //input.onChange
-           console.log(this.props.date)
+           //console.log(this.props.date)
            
            }}
            
@@ -333,6 +355,16 @@ class SimpleForm extends Component {
       </Item>
     )
   }
+  _showDateTimePicker = () => this.setState({ isDateTimePickerVisible: true });
+
+  _hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
+
+  _handleDatePicked = (date) => {
+    console.log('A date has been picked: ', date);
+    this._hideDateTimePicker();
+    let selectedDate = date.getFullYear()+'-'+(parseInt(date.getMonth())+1)+'-'+date.getDate();
+    this.setState({dob: selectedDate});
+  };
 
   render() {
     const { handleSubmit, reset, onSubmit, pristine, submitting } = this.props;
@@ -350,13 +382,23 @@ class SimpleForm extends Component {
         </View>
         <Loader
           loading={this.props.loadingIndicator} />
+          <View style={{ flex: 1 }}>
+            <TouchableOpacity onPress={this._showDateTimePicker}>
+              <Text>Show DatePicker</Text>
+            </TouchableOpacity>
+            <DateTimePicker
+              isVisible={this.state.isDateTimePickerVisible}
+              onConfirm={this._handleDatePicked}
+              onCancel={this._hideDateTimePicker}
+            />
+          </View>
           <Form>
           
               <Field name="username" component={this.renderInput} type="text" placeholder="User Name" password={false} placeholderTextColor="#fff" />
               <Field name="email" component={this.renderInput} type="email" placeholder="Email" password={false} placeholderTextColor="#fff" />
               <Field name="password" component={this.renderInput} placeholder="Password" type="Password" password={true} placeholderTextColor="#fff" />
               <Field name="confirmPassword" component={this.renderInput} placeholder="Confirm Password" type="Password" password={true} placeholderTextColor="#fff" />
-
+              <Field name="dob" component={this.renderDob} type="text" value={this.state.dob}/> 
               <Field name="date" component={this.renderDatePicker} type="text"/>
               <Field name="country" component={this.renderDropDown} dropDownList={country} placeholder="Select Country" type="text" />
               <Field name="states" component={this.renderDropDown} dropDownList={state} placeholder="Select State" type="text" />
@@ -411,6 +453,7 @@ const mapStateToProps = (state) => {
   //console.log(state);
   //signupReducer
   const { loadingIndicator,date } = state.signupReducer;
+  console.log(date);
   const { isLogin,logged_in_user_id } = state.checkLoginReducer;
   this.signupData = selector(state, 'username', 'email','password','confirmPassword','country','states','date');
   

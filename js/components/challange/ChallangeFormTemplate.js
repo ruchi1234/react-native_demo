@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import { Container, Item, Input, Body, Content, Title, Button, Text, Label, Form } from 'native-base';
+import { Container, Item, Input, Body, Content, Title, Button, Text, Label, Form, Thumbnail } from 'native-base';
 import { Field, reduxForm, formValueSelector, getFormValues, getFormNames, isValid, SubmissionError } from 'redux-form';
 import { connect } from "react-redux";
 import variable from './../../themes/variables';
@@ -8,10 +8,15 @@ import { Dropdown } from 'react-native-material-dropdown';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import styles from './addChallangetSyle';
 import ImagePicker from 'react-native-image-picker';
-import { updateQuestionList, submitChallange } from './actions';
+import { updateQuestionList, submitChallange, getServerData } from './actions';
 import Loader from './../Loader';
-//var ImagePicker = require('react-native-image-picker');
+import {  IMAGE_PICKER,IMAGE_PICKER_COMPLETE } from '../../actionTypes';
+import MultiSelect from 'react-native-multiple-select';
 
+
+
+//var ImagePicker = require('react-native-image-picker');
+const launchscreenLogo = require("../../../img/logo-ichallenge.png");
 const validate = values => {
     const error = {};
 
@@ -104,6 +109,24 @@ const totalQuestion = [
         value: 3
     }
 ]
+const questionPoints = [
+    {
+        value: 1
+    }
+    ,
+    {
+        value: 2
+    },
+    {
+        value: 3
+    },
+    {
+        value: 4
+    },
+    {
+        value: 5
+    }
+];
 const answerIndex = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
 const answerChoice = [
     {
@@ -125,6 +148,9 @@ class ChallangeFormTemplate extends Component {
             questionCount: 0,
             template: '',
             answerChoice: '',
+            challangeAnswerImage: [],
+            avatarSource: launchscreenLogo,
+            selectedInvites : []
 
         };
 
@@ -133,14 +159,18 @@ class ChallangeFormTemplate extends Component {
         this.renderDropDownTotal = this.renderDropDownTotal.bind(this);
         this.handleTotalQuestion = this.handleTotalQuestion.bind(this);
         this.renderCorrectAnswerDropDown = this.renderCorrectAnswerDropDown.bind(this);
+        this.renderMultiSelect = this.renderMultiSelect.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
 
+    }
+    componentDidMount(){
+        this.props.getServerData(this.props.logged_in_user_id);
     }
 
     handleSubmit() {
 
         let submitError = {};
-        console.log(this.props);
+        console.log("global state",this.state);
 
         if (challangeData.challangeName === undefined) {
             submitError.challangeName = '* Required';
@@ -187,17 +217,40 @@ class ChallangeFormTemplate extends Component {
 
             })
         }
-
-
-
-
-
         if (Object.keys(submitError).length != 0) {
             throw new SubmissionError(submitError);
         }
         else {
-            this.props.submitChallange(challangeData);
-            console.log(challangeData);
+
+            const QuestionList  = this.state.questionList;
+            let files = [];
+            var photo = '';
+            QuestionList.forEach(function(value,index){
+                let imageFile = [];
+                value.answerList.forEach(function(localValue, localindex){
+                    if(localValue.challangeAnswerImage != 2)
+                    {
+                        photo = localValue.challangeAnswerImage.uri;
+                        
+                        let imageObject = {
+                            uri: localValue.challangeAnswerImage.uri,
+                            type: 'image/jpeg',
+                            name: 'file['+index+']['+localindex+'].jpg',
+
+                        }
+                        //console.log(imageObject);
+                        
+                        files.push(imageObject);
+                     
+                    }
+                    
+                })
+
+            })
+            
+            this.props.submitChallange(challangeData,files,this.props.logged_in_user_id);
+
+           
         }
 
     }
@@ -215,6 +268,7 @@ class ChallangeFormTemplate extends Component {
                         [
                             {
                                 name: 'Question_' + (i - 1),
+                                questionPoint : 'questionPoint_' + (i - 1),
                                 placeholder: 'Enter Question ' + i,
                                 key: i,
                                 correctAnswer: 'correctAnswer_' + (i - 1),
@@ -222,22 +276,27 @@ class ChallangeFormTemplate extends Component {
                                     {
                                         name: 'Answer_' + (i - 1) + '_0',
                                         placeholder: 'Answer A',
-                                        keys: i + '_A'
+                                        keys: i + '_A',
+                                        challangeAnswerImage: launchscreenLogo
+
                                     },
                                     {
                                         name: 'Answer_' + (i - 1) + '_1',
                                         placeholder: 'Answer B',
-                                        keys: i + '_B'
+                                        keys: i + '_B',
+                                        challangeAnswerImage: launchscreenLogo
                                     },
                                     {
                                         name: 'Answer_' + (i - 1) + '_2',
                                         placeholder: 'Answer C',
-                                        keys: i + '_C'
+                                        keys: i + '_C',
+                                        challangeAnswerImage: launchscreenLogo
                                     },
                                     {
                                         name: 'Answer_' + (i - 1) + '_3',
                                         placeholder: 'Answer D',
-                                        keys: i + '_D'
+                                        keys: i + '_D',
+                                        challangeAnswerImage: launchscreenLogo
                                     }
 
                                 ],
@@ -261,6 +320,7 @@ class ChallangeFormTemplate extends Component {
         }
         //console.log("question List" + JSON.stringify(this.state.questionList))
         this.props.updateQuestionList(this.state.questionList)
+     
         return true;
         //console.log(this.state.questionCount);
         //console.log('handleTotalQuestion' + value);
@@ -285,24 +345,23 @@ class ChallangeFormTemplate extends Component {
         input.onChange
         return true;
     }
-    uploadImage() {
+    uploadImage(challangeQuestionIndex,challangeAnswerIndex) {
         // More info on all the options is below in the README...just some common use cases shown here
+        this.props.dispatch({type: IMAGE_PICKER});
         var options = {
             title: 'Select Avatar',
-
+            mediaType: 'photo',
+            quality: 0.5,
             storageOptions: {
                 skipBackup: true,
                 path: 'images'
             }
         };
 
-        /**
-         * The first arg is the options object for customization (it can also be null or omitted for default options),
-         * The second arg is the callback which sends object: response (more info below in README)
-         */
-        ImagePicker.showImagePicker(options, (response) => {
-            console.log('Response = ', response);
+        
 
+        ImagePicker.showImagePicker(options, (response) => {
+            
             if (response.didCancel) {
                 console.log('User cancelled image picker');
             }
@@ -313,16 +372,69 @@ class ChallangeFormTemplate extends Component {
                 console.log('User tapped custom button: ', response.customButton);
             }
             else {
-                //let source = { uri: response.uri };
+            
+                let source;
+                if (response.type === 'data') { 
+                    source = { uri: 'data:image/jpeg;base64,' + response.data, isStatic: true };
+                }
+                else{
+                    source = { uri: 'data:image/jpeg;base64,' + response.data, isStatic: true };
+                }
+                
+             
+               let item = this.state.questionList;
+               
+               //console.log(item[challangeQuestionIndex].answerList[challangeAnswerIndex].challangeAnswerImage);
 
-                // You can also display the image using data:
-                let source = { uri: 'data:image/jpeg;base64,' + response.data };
+                item[challangeQuestionIndex].answerList[challangeAnswerIndex].challangeAnswerImage = source;
+                this.setState(item);
+                console.log(this.state.questionList);
+              
+              // let newChallangeAnswerImage = this.state.challangeAnswerImage;
 
-                this.setState({
-                    avatarSource: source
-                });
+               //let insertData = {}; 
+               //insertData[challangeAnswerIndex] = source;
+              // newChallangeAnswerImage[challangeQuestionIndex].push(insertData);
+               
+               //this.setState({challangeAnswerImage: newChallangeAnswerImage})
+               //console.log(this.state.challangeAnswerImage);
+               this.props.dispatch({type: IMAGE_PICKER_COMPLETE});
+               // this.props.updateProfileImage(source,this.props.logged_in_user_id)
             }
         });
+        /*
+        ImagePicker.launchCamera(options, (response) => {
+            
+            if (response.didCancel) {
+                console.log('User cancelled image picker');
+            }
+            else if (response.error) {
+                console.log('ImagePicker Error: ', response.error);
+            }
+            else if (response.customButton) {
+                console.log('User tapped custom button: ', response.customButton);
+            }
+            else {
+            
+                let source;
+                if (response.type === 'data') { 
+                    source = { uri: 'data:image/jpeg;base64,' + response.data, isStatic: true };
+                }
+                else{
+                    source = { uri: 'data:image/jpeg;base64,' + response.data, isStatic: true };
+                }
+                
+               let item = this.state.questionList;
+               
+
+                item[challangeQuestionIndex].answerList[challangeAnswerIndex].challangeAnswerImage = source;
+                this.setState(item);
+                
+                this.props.dispatch({type: IMAGE_PICKER_COMPLETE});
+               // this.props.updateProfileImage(source,this.props.logged_in_user_id)
+            }
+        });
+        */
     }
 
 
@@ -531,6 +643,56 @@ class ChallangeFormTemplate extends Component {
         )
     }
 
+    renderMultiSelect({ input, type, dropDownList, placeholder, changeFunction, disabled, correctAnswerIndex, values, meta: { active, error, warning } }) {
+
+        var hasError = false;
+        const { selectedInvites } = this.state;
+
+        if (error !== undefined) {
+            hasError = true;
+        }
+
+
+        return (
+            <Item error={hasError} style={{ marginLeft: 0, height: 56, }}>
+            <View style={{ flex: 1}}>
+                <MultiSelect
+                        hideTags
+                        items={dropDownList}
+                        uniqueKey="id"
+                        flexDirection = 'column'
+                        width = {293}
+                        fontSize = {15}
+                    
+                        borderBottomWidth = {0}
+                        ref={(component) => { this.multiSelect = component }}
+                        onSelectedItemsChange={(selectedInvites)=>{ this.setState({ selectedInvites }); }}
+                        style={{flex: 2, flexDirection: 'row',width:293,paddingTop:5}}
+                        selectText="Pick Items"
+                        searchInputPlaceholderText="Search Items..."
+                        onChangeInput={ (text)=> console.log(text)}
+                        altFontFamily=""
+                        tagRemoveIconColor="#CCC"
+                        tagBorderColor="#CCC"
+                        tagTextColor="#95a5a6"
+                        selectedItemTextColor="#95a5a6"
+                        selectedItemIconColor="#95a5a6"
+                        itemTextColor="#95a5a6"
+                        textColor = "#95a5a6"
+                        displayKey="contact_name"
+                        searchInputStyle={{ color: '#CCC',borderBottomWidth: 0,width:293,flex: 2, flexDirection: 'row',paddingTop:5 }}
+                        submitButtonColor="#CCC"
+                        hideSubmitButton = {true}
+                        submitButtonText=""
+                        borderBottomWidth= {0}
+                    
+                        />
+                </View>
+           
+            </Item>
+        )
+    }
+
     render() {
         const { handleSubmit, reset, onSubmit, pristine, submitting } = this.props;
         //const { navigate } = this.props.navigates;
@@ -543,13 +705,16 @@ class ChallangeFormTemplate extends Component {
                 <View>
                     <Loader
                         loading={this.props.loadingIndicator} />
+                       
+                    
+                    
                     <Form>
                         <Field name="challangeName" component={this.renderInput} type="text" placeholder="Challange Name" values="" />
                         <Field name="template" component={this.renderDropDown} dropDownList={template} placeholder="Template" values="" />
                         <Field name="category" component={this.renderDropDown} dropDownList={category} placeholder="Category" values="" />
                         <Field name="series" component={this.renderDropDown} dropDownList={series} placeholder="Series" values="" />
                         <Field name="entry" component={this.renderDropDown} dropDownList={entry} placeholder="Entry" values="" />
-                        <Field name="invites" component={this.renderDropDown} dropDownList={template} placeholder="Invites" />
+                        <Field name="invites" component={this.renderDropDown} dropDownList={series} placeholder="Invites" />
                         <Field name="challangePrice" component={this.renderInput} type="text" placeholder="Challange Prize" values="" />
                         {/*
                     <Field name="answerChoice" component={this.renderDropDown} dropDownList={answerChoice} placeholder="Answer Type" values="" />
@@ -558,21 +723,34 @@ class ChallangeFormTemplate extends Component {
                         {this.state.questionList.map((questionList, index) => (
 
                             <View key={"parentView" + questionList.key} style={styles.questionContainer}>
+                                <Field name={questionList.questionPoint} component={this.renderDropDown}  dropDownList={questionPoints} placeholder="Question Point"/>
                                 <Field name={questionList.name} component={this.renderInput} type="text" placeholder={questionList.placeholder} key={questionList.key} values="" />
                                 {questionList.answerList.map((answerList, indexs) => (
-                                    <View key={"childView" + answerList.keys}>
+                                    <View key={"childView" + answerList.keys} style={{height:160}}>
                                         <Field name={answerList.name} component={this.renderInput} type="text" placeholder={answerList.placeholder} key={"childField" + answerList.keys} />
-                                        {/*
-                                    <View style={{flex:1,justifyContent:'space-between',borderBottomWidth:1,borderColor:'#D9D5DC',height:40,marginTop:5}}>
+                                        
+                                    <View style={{flex:1,flexDirection:'row',justifyContent:'space-between',borderBottomWidth:1,borderColor:'#D9D5DC',height:40,marginTop:5}}>
+                                       
                                         <View style={{alignItems:'flex-start'}}>
-                                            <Icon name='upload' style={{fontSize:18}} onPress={this.uploadImage.bind(this)}/>
+                                        <Image
+                                        style={{
+                                            width: 51,
+                                            height: 51,
+                                            resizeMode: Image.resizeMode.contain,
+                                        }}
+                                        source={
+                                            answerList.challangeAnswerImage
+                                        }
+                                        />
                                         </View>
                                         <View style={{alignItems:'flex-end'}}>
-                                        <Image source={this.state.avatarSource} style={styles.uploadAvatar}  />
+                                            <Icon name='upload' style={{fontSize:18}} onPress={this.uploadImage.bind(this,index,indexs)}/>
                                         </View>
                                        
+                                       
+                                       
                                     </View>
-                                    */}
+                                   
 
                                         {/*
                                     <Button type="submit" block primary onPress={this.uploadImage.bind(this)} style={styles.btn}>
@@ -597,8 +775,11 @@ class ChallangeFormTemplate extends Component {
 
                         }
                         <View style={{ justifyContent: 'center', flex: 1 }}>
-
-
+                            {/*
+                           <Button type="submit" block primary onPress={this.uploadImage.bind(this)} style={styles.btn}>
+                                <Text style={{ color: '#fff' }}>Submitt</Text>
+                            </Button>
+                            */}
                             <Button type="submit" block primary onPress={this.props.handleSubmit(this.handleSubmit.bind(onSubmit))} style={styles.btn}>
                                 <Text style={{ color: '#fff' }}>Submitt</Text>
                             </Button>
@@ -619,9 +800,10 @@ const mapStateToProps = (state) => {
     //console.log(state);
     //signupReducer
 
-    const { questionList, loadingIndicator } = state.challangeReducer;
+    const { questionList, loadingIndicator, contact_list } = state.challangeReducer;
     this.questionList = questionList;
-    //console.log("questionList"+ JSON.stringify(state));
+    const { internetStatus, logged_in_user_id } = state.globalReducer;
+    //console.log("questionList",JSON.stringify(state));
     this.challangeData = getFormValues('Challange')(state);
     if (!this.challangeData) {
         this.challangeData = {}
@@ -629,13 +811,15 @@ const mapStateToProps = (state) => {
     return {
         questionList,
         challangeData,
-        loadingIndicator
+        loadingIndicator,
+        logged_in_user_id,
+        contact_list
     }
 
 };
 ChallangeFormTemplate = connect(
     mapStateToProps,
-    { updateQuestionList, submitChallange }
+    { updateQuestionList, submitChallange, getServerData }
 )(ChallangeFormTemplate)
 
 

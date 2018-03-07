@@ -20,7 +20,7 @@ export default class App extends Component {
       isReaddy: false
     };
 
-     global.apiurl = 'http://innorade.in/seller/location/';
+     //global.apiurl = 'http://innorade.in/seller/location/';
   }
 
 

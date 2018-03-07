@@ -1,6 +1,9 @@
 import { GET_PROFILE, GET_PROFILE_COMPELETE, GET_PROFILE_ERROR ,UPDATE_PROFILE, UPDATE_PROFILE_COMPELETE, UPDATE_PROFILE_ERROR, UPDATE_PASSWORD, UPDATE_PASSWORD_SUCCESSFUL, ERROR, MODAL_VISSIBLE, MODAL_HIDDEN } from '../../actionTypes';
 import api from './../../config/api';
+
 import { ToastActionsCreators } from 'react-native-redux-toast';
+
+
 
 
 
@@ -32,6 +35,7 @@ export const fetchProfile = (login_user_id, callback) => {
                         }
                         //console.log(profileData)
                         dispatch({ type: GET_PROFILE_COMPELETE, payload: profileData });
+                        callback(json.profile.image);
 
                     }
                     else {
@@ -138,34 +142,41 @@ export const updateProfileImage = (image,logged_in_user)=>{
     return (dispatch) => {
         
         var photo = {
-            uri: image,
+            uri: image.uri,
             type: 'image/jpeg',
             name: 'photo.jpg',
         };
+
         let form = new FormData();
         form.append("ProfilePicture", photo);
-        //console.log(photo);
+        form.append('user_id', logged_in_user);
+        console.log(form);
        // console.log("updateProfileImage"+ api.update_profile_image);
         fetch(api.update_profile_image, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                //'Content-Type': 'multipart/form-data;',
+                'Content-Type': 'application/json;',
             },
-            body: photo
+            body: form
         })
             .then((response) => response.json())
             .then(function (json) {
                
                 if (json.status == 200 && json.success == true) {
-                   console.log("successful")
+                    dispatch(ToastActionsCreators.displayInfo(json.message));
+                }
+                else{
+                    dispatch(ToastActionsCreators.displayError(json.message));
                 }
 
             })
 
             .catch(function (error) {
+                dispatch(ToastActionsCreators.displayError(error.message));
                 console.log(error);
             })  
+        
     }
 }
 export const modalHandler = (currentState) => {

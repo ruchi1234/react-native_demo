@@ -9,6 +9,7 @@ export default {
     updateContact : apiUrl+"contact/update_contact",
     addContact : apiUrl+"contact/add_contact",
     updatePassword : apiUrl+"updatePassword",
+    getServerChallenegeData : apiUrl+"challange/getServerChallenegeData",
     createChallange : apiUrl+"challange/create",
     lobby : apiUrl+"challange/lobby",
     challangeInfo : apiUrl+"challange/challenge_detail",

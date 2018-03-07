@@ -20,6 +20,7 @@ const DrawerExample = DrawerNavigator(
     StartApp: { screen: StartApp },
     Home: { screen: Home },
     Login: { screen: Login },
+   
     Signup: { screen: Signup },
     Lobby: { screen: Lobby },
     Profile: { screen: Profile },
@@ -31,7 +32,7 @@ const DrawerExample = DrawerNavigator(
 
   },
   {
-    initialRouteName: "StartApp",
+    initialRouteName: "Signup",
     contentOptions: {
       activeTintColor: "#e91e63"
     },

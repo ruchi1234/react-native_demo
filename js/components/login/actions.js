@@ -36,7 +36,14 @@ export const loginUser = (loginData,callback) => {
             )
         })
         
-            .then((response) => response.json())
+            .then((response) => { 
+                
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+                
+                return response.json()
+            })
             .then(function (json) {
 
                 if (json.status == 200 && json.success==true) {
@@ -71,6 +78,7 @@ export const loginUser = (loginData,callback) => {
 
             .catch(function (error) {
                 //console.log(error.message);
+                dispatch(ToastActionsCreators.displayError(error.message));
                 loginUserFailed(dispatch, error.message);
             })
             
